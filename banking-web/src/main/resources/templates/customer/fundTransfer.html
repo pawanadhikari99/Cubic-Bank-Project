@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+<title>Fund Transfer Page</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
+
+<style>
+.ffooter {
+	position: fixed;
+	left: 0;
+	bottom: 0;
+	width: 100%;
+	background-color: red;
+	color: white;
+	text-align: center;
+	height: 30px;
+	background-color: #e9ffe7;
+}
+
+.row {
+	display: flex;
+}
+
+.column {
+	flex: 50%;
+	padding: 7px;
+}
+</style>
+
+<script type="text/javascript">
+
+$(document).ready(function(){
+	load();
+});
+	function load(){
+		
+		
+		 
+	    var username =$("#username").html();
+	
+		//when page is loaded, this method will be called
+		fetch("/v3/customer/from-to-accounts?loginid="+username).then(response=>response.json()).then(function(data){
+			console.log(data);
+			$("#fromAccount").append($("<option />").val(data.fromAccount).text(data.fromAccount));
+			var arrayData=data.toAccount;
+			for(var x=0; x<arrayData.length;x++){
+				$("#toAccount").append($("<option />").val(arrayData[x]).text(arrayData[x]));	
+			}
+			$("#cbalance").html(data.currentBalance);
+		});
+		
+		$("#amount").blur(function(){
+			var input=$(this).val();
+	var callIn=fetch("/v3/customer/convertToWords?amount="+input);
+	callIn.then(resp=>resp.text()).then(function(output){
+			console.log(output);
+			$("#inWords").html(output);
+		});//end of fetch
+		})
+	}
+</script>
+</head>
+
+<body>
+	<header style="height: 30px; background-color: black; color: white;">
+		Hello Mr.
+		<span th:utext="${session.userSessionVO.username}" th:unless="${session == null}" th:id="username"
+			style="font-weight: bold;"></span>
+	</header>
+	
+	<div class="container">
+	<h2> Transfer fund page</h2>
+		<a th:href="@{/customer/pendingPayee}">
+			<button type="button" class="btn btn-success">Pending payee</button>
+		</a>
+		<a th:href="@{/customer/registeredPayee}">
+			<button type="button" class="btn btn-info">My registered payees</button>
+		</a>
+		<a th:href="@{/customer/logout}">
+			<button type="button" class="btn btn-warning">Logout</button>
+		</a>
+		<br />
+		
+			<form th:action="@{/customer/fundTransfer}" method="POST" th:object="${fundTransferVO}"
+				name="fundTransferVOForm">
+				<input type="hidden" id="currentBalance">
+			<table class="table table-bordered" style="width: 100%;">
+				<thead>
+					<tr>
+						<td colspan="2" id="balance"></td>
+					</tr>
+				</thead>
+				<tr>
+				<td>
+				<div>
+						<label for="fromAccount">From Account:</label>
+						<select name="fromAccount" class="form-control" id="fromAccount">
+						</select>
+					</div>
+					</td>
+					<td>
+						<div>
+						<label for="toAccount">To Account:</label>
+						<br/>
+						<select name="toAccount" class="form-control" id="toAccount" style="font-weight: bold;">
+							<option>Select the person:</option>
+						</select>
+					</div>
+					</td>
+					</tr>
+					<tr>
+					
+					<td>
+					<div>
+						<label for="amount">Amount:</label>
+						<br />
+						<input type="number" style="width: 60%;" class="form-control" th:field="*{amount}"
+							placeholder="Enter the amount">
+						<span id="inWords"> In Words</span>
+					</div>
+					</td>
+					</tr>
+				<td colspan=2>
+						<label for="remarks">Remarks</label>
+						<input type="text" th:field="*{remarks}" class="form-control">
+					</td>
+					
+				</tr>
+			</table>	
+					<a th:href="@{/customer/transferConfirm}">
+			<button type="button" id="submitButton" class="btn btn-primary">Submit</button>
+		</a>
+		</form>
+	<footer class="ffooter"> </footer>
+
+</body>
+</html>

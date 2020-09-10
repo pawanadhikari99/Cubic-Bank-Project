@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:th="http://www.thymeleaf.org">
+<head>
+<title>Login Page</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet"
+	href="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
+<script
+	src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+<script
+	src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+<script
+	src="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
+<style>
+.ffooter {
+	position: fixed;
+	left: 0;
+	bottom: 0;
+	width: 100%;
+	background-color: red;
+	color: white;
+	text-align: center;
+	height: 30px;
+	background-color: #e9ffe7;
+}
+</style>
+
+<script type="text/javascript">
+ 
+ 	function customerSearch(){
+ 		
+ 		var searchText=$("#usernameEmail").val();
+ 		$('#body').empty();
+ 		//AJAX call to fetch data
+ 		//Rest API call
+ 		
+ 		var promise=fetch("/v3/customer/customerSearch?searchText="+searchText);
+ 		
+
+ 		promise.then(response=>response.json()).then(function(data){
+ 			
+ 		$("#pdtable").show(); 
+		var tdata ='';
+			$.each(data,function(key,value){
+			tdata +='<tr>';
+			tdata +='<td>'+(key+1)+'</td>';
+			tdata +='<td>'+value.name+'</td>';
+			tdata +='<td>'+value.email+'</td>'; 
+			tdata +='<td>'+value.gender+'</td>';
+			tdata +="<td><img src=/load/image?email="+value.email+" style=height:150px;></td>";
+			tdata +='<td>'+value.doe+'</td>';
+			var email=value.email;
+			/* tdata +="<td><img src=/images/demoCard.PNG style=height:30px onClick=\"openModal();\">  </td>"; */
+			tdata +='<td><a href=javascript:openModal(\"'+value.email+'\");><img src=/images/demoCard.PNG style=height:30px> </a> </td>'; 
+			tdata +='</tr>'
+			}) ;
+			$('#body').append(tdata);
+ 		}).catch(error=>{console.log("Data not found !!!")});
+ 		
+ 	}
+ 
+       function messageClear(){
+    	   var searchText=$("#usernameEmail").val();
+    	   $("#errorMessage").html("");
+    	   if(searchText.length==0){
+    		   $("#pdtable").hide();
+    	   }
+       }
+       
+       function openModal(email){
+    	   var promise=fetch("/v3/customer/customerSearch?searchText="+email);
+    	   promise.then(response=>response.json()).then(function(data){
+    		   console.log(name);
+    	   $("#tname").html(data[0].name);
+    	   console.log(name);
+    	   $("#ccemail").html(email);
+    	   })
+    	   $("#openCcModal").modal("show");
+    	   $("#cardfront").show().attr("src","/images/CreditCardFront.jpg");
+    	   $("#cardback").show().attr("src","/images/CreditCardBack.jpg");
+    	   console.log(email);
+    	   console.log(name)
+    	   $("#ccEmail").html(email); 	
+    	   $("#sname").html(name);
+       }
+       
+       function generateCard(){
+    	   
+    	   var name=$("#tname").html();
+    	   console.log(name)
+    	   var email=$("#ccEmail").html();
+    	   $("#cardfront").attr("src","/customers/credit/card?name="+name+"&email="+email);
+    	   $("#cardback").attr("src","/customers/credit/bcard");
+   			
+       }
+       
+       
+       
+ </script>
+</head>
+<body>
+	<header style="height: 30px; background-color: maroon;"> </header>
+	<div class="container">
+		<h2>Customer Search Page</h2>
+		<img th:src="@{/images/CustomerSearch.png}" alt="Logo"
+			style="height: 140px" /> <br /> <span th:utext="${error}"
+			style="color: red; font-size: 18px; font-weight: bold;"
+			id="errorMessage"></span> <span th:utext="${message}"
+			style="color: blue; font-size: 18px; font-weight: bold;"></span>
+		<div style="width: 70%">
+			<form th:action="@{/customer/customerSearch}" method="GET" id="Form"
+				name="customerSearchForm">
+				<div class="form-group">
+					<label for="username">Enter your Username or Email:</label> <input
+						type="text" style="width: 60%;" class="form-control"
+						name="usernameEmail" id="usernameEmail"
+						placeholder="Enter username" onkeyup="messageClear();">
+						</div>
+				<button type= "button" class="btn btn-primary"
+					onclick="customerSearch();">Search Customer</button>
+
+				<button type="reset" class="btn btn-danger">Reset
+				</button>
+			</form>
+		</div>
+		<hr />
+		<p>
+			<img th:src="@{/images/results.jpg}" style="height: 65px;" /> Current
+			Customer Search
+		</p>
+		<table class="table table-bordered" id="pdtable" style="display:none">
+			<thead>
+				<tr>
+					<th>S.No.</th>
+					<th>Name</th>
+					<th>Email</th>
+					<th>Gender</th>
+					<th>Photo</th>
+					<th>DOE</th>
+					<th>Card</th>
+				</tr>
+			</thead>
+			<tbody id="body">
+			</tbody>
+			<tfoot style="display:none">
+				<tr id = "sample">
+					<td id="psn">1</td>
+					<td id="pname">John</td>
+					<td id="pemail">john@example.com</td>
+					<td id="pgender">Male</td>
+					<td id="photo"><img src="" style="height: 150px;"></td>
+					<td id="pdoe">50550</td>
+					<td id="pcard">Generate card </td>
+				</tr>
+		</tfoot>
+		</table>
+	</div>
+	 <!-- Modal -->
+  <div class="modal fade" id="openCcModal" role="dialog">
+    <div class="modal-dialog">
+    
+      <!-- Modal content-->
+      <div class="modal-content">
+     
+        <input type="hidden" name="temail" id="ccemail"/>
+        <input type="hidden" name="cid" id="cid"/>
+        <div class="modal-header">
+          <h4 class="modal-title">Credit card generating page</h4>
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+        </div>
+        <div class="modal-body">
+        Customer Name: 
+          <span id="tname" ></span><br>
+        Email: 
+          <span id="ccEmail" th:text="*{pemail}" th:value="${pemail}"></span>
+          <br>
+          Credit Card Layout:
+           <span id="ccPhoto" th:text="*{pphoto}" th:value="${pphoto}"></span>
+          <br>
+           <span  style="color:blue; font-size: 18px;font-weight: bold;" id="sname"></span>
+           <img th:src="@{/images/CreditCardFront.jpg}" id="cardfront" style=height:250px>
+           <br>
+         <img th:src="@{/images/CreditCardBack.jpg}" id="cardback" style=height:250px>
+        </div>
+        <div class="modal-footer">
+         <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-success" onclick="generateCard();">Generate Card</button>
+        </div>
+      </div>
+      
+    </div>
+  </div>
+	
+	<footer class="ffooter"> </footer>
+
+</body>
+</html>
